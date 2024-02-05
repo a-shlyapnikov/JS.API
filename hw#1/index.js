@@ -63,7 +63,8 @@ const initialData = `[
 
 const lessonsData = {};
 const initialDataArr = JSON.parse(initialData);
-const localStorageKey = 'Lessons';
+const localStorageLessonsKey = 'Lessons';
+const localStorageUsersKey = 'Users';
 const lessonsContainerEl = document.querySelector('.lessons-container');
 
 
@@ -72,89 +73,109 @@ initialDataArr.forEach(element => {
     lessonsData[id] = { ...lesson };
 });
 
-if (!localStorage.getItem(localStorageKey)) {
-    saveToLocalStorage(localStorageKey, lessonsData);
+if (!localStorage.getItem(localStorageLessonsKey)) {
+    saveToLocalStorage(localStorageLessonsKey, lessonsData);
 }
 
-const lessons = JSON.parse(localStorage.getItem(localStorageKey));
+const lessons = JSON.parse(localStorage.getItem(localStorageLessonsKey));
 
 for (const id in lessons) {
-    addToLessons(lessons[id], id);
+    renderLesson(lessons[id], id);
 }
 
-const userName = prompt('Введите имя пользователя') // имитация авторизации
-const userLessons = {};
-
-if (!localStorage.getItem(userName)) {
-    saveToLocalStorage(userName, {});
+const userName = prompt('Введите имя пользователя'); // имитация авторизации
+if (!localStorage.getItem(localStorageUsersKey)) {
+    saveToLocalStorage(localStorageUsersKey, {});
 }
+let users = JSON.parse(localStorage.getItem(localStorageUsersKey));
+if (!users[userName]) {
+    users[userName] = {};
+    saveToLocalStorage(localStorageUsersKey, users);
+}
+
+
+window.addEventListener('DOMContentLoaded', (e) => {
+    const userLessons = users[userName];
+    for (const lessonId in lessons) {
+        const lesson = document.querySelector(`.lesson[data-id="${lessonId}"]`);
+        if (userLessons.hasOwnProperty(lessonId)) {
+            const btnRegister = lesson.querySelector('.lesson__register');
+            btnRegister.disabled = true;
+        } else {
+            const btnCancel = lesson.querySelector('.lesson__cancel');
+            btnCancel.disabled = true;
+        }
+    }
+});
+
+
+
 
 lessonsContainerEl.addEventListener('click', ({ target }) => {
     const lesson = target.closest('.lesson');
+    const lessonId = lesson.dataset.id
     if (target.matches('.lesson__register')) {
+        if (!checkParicipants(lessonId) || checkUserRegistarion(lessonId)) {
+            target.disabled = true;
+            return;
+        }
         register(lesson);
+        target.disabled = true;
+        const btnCancel = lesson.querySelector('.lesson__cancel');
+        btnCancel.disabled = false;
+        return;
     }
     if (target.matches('.lesson__cancel')) {
+        if (!checkUserRegistarion(lessonId)) {
+            target.disabled = true;
+            return;
+        }
         cancel(lesson);
+        const btnRegister = lesson.querySelector('.lesson__register');
+        btnRegister.disabled = false;
+        target.disabled = true;
+        return;
     }
 });
 
 
 function register(lesson) {
-    try {
-        const id = lesson.dataset.id
-        if (!checkParicipants(id)) {
-            throw new Error('Колличество учатников занятия максимально');
-        }
-        if (checkUserRegistarion(id)) {
-            throw new Error('Вы уже зарегистрированы на это занятие');
-        }
-        lessons[id].currentParticipants++;
-        const { name, time } = lessons[id];
-        userLessons[id] = { name, time };
-        saveToLocalStorage(localStorageKey, lessons);
-        saveToLocalStorage(userName, userLessons);
-        updateLesson(lesson);
-    } catch (error) {
-        alert(error.message);
-        console.log(error);
-    }
+    const lessonId = lesson.dataset.id
+    lessons[lessonId].currentParticipants++;
+    const { name, time } = lessons[lessonId];
+    users[userName][lessonId] = { name, time };
+    saveToLocalStorage(localStorageLessonsKey, lessons);
+    saveToLocalStorage(localStorageUsersKey, users);
+    updateLesson(lesson);
+
 }
 
 function cancel(lesson) {
-    try {
-        const id = lesson.dataset.id
-        if (!checkUserRegistarion(id)) {
-            throw new Error('Вы не зарегистрированы на это занятие')
-        }
-        lessons[id].currentParticipants--;
-        delete userLessons[id];
-        saveToLocalStorage(localStorageKey, lessons);
-        saveToLocalStorage(userName, userLessons);
-        updateLesson(lesson);
-    } catch (error) {
-        alert(error.message)
-        console.log(error);
-    }
+    const id = lesson.dataset.id
+    lessons[id].currentParticipants--;
+    delete users[userName][id];
+    saveToLocalStorage(localStorageLessonsKey, lessons);
+    saveToLocalStorage(localStorageUsersKey, users);
+    updateLesson(lesson);
 }
 
 
 function updateLesson(lesson) {
-    const currentParticipants = lesson.querySelector('.lesson__curr-participants');
-    currentParticipants.textContent = `Количество текущих участников: ${lessons[lesson.dataset.id].currentParticipants}`
+    const currentParticipants = lesson.querySelector('.lesson__curr-participants span');
+    currentParticipants.textContent = lessons[lesson.dataset.id].currentParticipants;
 }
 
 
 
 function checkUserRegistarion(lessonId) {
-    return JSON.parse(localStorage.getItem(userName))[lessonId];
+    return users[userName][lessonId];
 }
 
 function checkParicipants(lessonId) {
     return lessons[lessonId].maxParticipants > lessons[lessonId].currentParticipants;
 }
 
-function addToLessons(lesson, id) {
+function renderLesson(lesson, id) {
     lessonsContainerEl.insertAdjacentHTML('beforeend', getLessonTemplate(lesson, id));
 }
 
@@ -168,7 +189,7 @@ function getLessonTemplate(lesson, id) {
             <h3 class="lesson__title">${lesson.name}</h3>
             <p class="lesson__time">${lesson.time}</p>
             <p class="lesson__max-participants">Максимальное количество участников: ${lesson.maxParticipants}</p>
-            <p class="lesson__curr-participants">Количество текущих участников: ${lesson.currentParticipants}</p>
+            <p class="lesson__curr-participants">Количество текущих участников: <span>${lesson.currentParticipants}</span></p>
             <button class="lesson__register">Записаться</button>
             <button class="lesson__cancel">Отменить запись</button>
         </div>
