@@ -39,11 +39,10 @@ const paginationEl = document.querySelector('.pagination');
 const prevBtnEl = paginationEl.querySelector('.prev-btn');
 const nextBtnEl = paginationEl.querySelector('.next-btn');
 
-let CURRENT_PAGE = 1;
+let CURRENT_SLIDE = 1;
 
 window.addEventListener('DOMContentLoaded', () => {
-    changeSlide(CURRENT_PAGE)
-
+    setup(CURRENT_SLIDE);
 })
 
 sliderData.forEach((slide, index) => {
@@ -53,39 +52,58 @@ sliderData.forEach((slide, index) => {
 paginationEl.addEventListener('click', ({ target }) => {
     if (target.matches('.btn-id a')) {
         const id = target.parentNode.dataset.id;
-        changeSlide(id, target.parentNode);
-        CURRENT_PAGE = +id;
+        if (!(CURRENT_SLIDE === +id)) {
+            changeSlide(id, target.parentNode);
+            CURRENT_SLIDE = +id;
+        }
+
     }
-    
+
     if (target.matches('.prev-btn a')) {
-        if (CURRENT_PAGE > 1) {
-            CURRENT_PAGE--
-            changeSlide(CURRENT_PAGE)
+        if (CURRENT_SLIDE > 1) {
+            CURRENT_SLIDE--
+            changeSlide(CURRENT_SLIDE)
         } else {
             changeSlide(sliderData.length)
-            CURRENT_PAGE = sliderData.length
+            CURRENT_SLIDE = sliderData.length
         }
     }
     if (target.matches('.next-btn a')) {
-        if (CURRENT_PAGE ===  sliderData.length) {
-            CURRENT_PAGE = 1;
-            changeSlide(CURRENT_PAGE)
+        if (CURRENT_SLIDE === sliderData.length) {
+            CURRENT_SLIDE = 1;
+            changeSlide(CURRENT_SLIDE)
         } else {
-            CURRENT_PAGE++;
-            changeSlide(CURRENT_PAGE)
+            CURRENT_SLIDE++;
+            changeSlide(CURRENT_SLIDE)
         }
     }
 });
 
+
+
 const paginationList = paginationEl.querySelectorAll('li');
 
-
-function changeSlide(id, node) {
-    sliderEl.innerHTML = getSlideTemplate(sliderData[id - 1]);
-    removeActive(document.querySelector(`li[data-id="${id}"`));
+function setup(index) {
+    sliderEl.innerHTML = getSlideTemplate(sliderData[index - 1]);
+    changeActive(document.querySelector(`li[data-id="${index}"`));
 }
 
-function removeActive(node) {
+function changeSlide(id) {
+    const slide = sliderEl.querySelector('.slide');
+    slide.classList.add('fade-out')
+    setTimeout(() => {
+        sliderEl.innerHTML = getSlideTemplate(sliderData[id - 1]);
+        const slide = sliderEl.querySelector('.slide');
+        slide.classList.add('fade-out');
+        setTimeout(function () {
+            slide.classList.remove('fade-out');
+        }, 50);
+
+    }, 200);
+    changeActive(document.querySelector(`li[data-id="${id}"`));
+}
+
+function changeActive(node) {
     paginationList.forEach(element => {
         if (element.classList.contains('active')) {
             element.classList.remove('active')

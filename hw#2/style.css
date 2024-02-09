@@ -10,7 +10,7 @@ body {
     font-family: 'Muli', sans-serif;
     overflow: hidden;
     margin: 0;
-    background-color:rgb(52, 51, 51);
+    background-color: rgb(52, 51, 51);
     background-size: cover;
     background-position: center;
     height: 100vh;
@@ -18,23 +18,35 @@ body {
 
 
 
-.slider{
+.slider {
     height: 80vh;
 }
-.slide{
+
+.slide {
     position: relative;
+    transition: opacity .8s ease;
 }
 
-.slide img{
+.slide img {
     width: 100%;
     height: 100vh;
 }
-.slide h3{
+
+.slide h3 {
     color: #fefefe;
     position: absolute;
     bottom: 20%;
     left: 10%;
 }
+
+.fade-out {
+    opacity: 0.1;
+}
+
+.fade-in {
+    opacity: 1;
+}
+
 
 .pagination-wrapper {
     position: relative;
@@ -70,9 +82,10 @@ body {
     font-weight: 500;
 }
 
-.pagination-wrapper .pagination li a:hover{
+.pagination-wrapper .pagination li a:hover {
     background: rgba(255, 255, 255, 0.1);
 }
+
 .pagination-wrapper .pagination li.active a {
     background: rgba(255, 255, 255, 0.3);
 }
