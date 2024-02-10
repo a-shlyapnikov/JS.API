@@ -91,23 +91,19 @@ function setup(index) {
 function changeSlide(id) {
     const slide = sliderEl.querySelector('.slide');
     slide.classList.add('fade-out')
-    setTimeout(() => {
+    slide.addEventListener('transitionend', ()=>{
+        console.log('animation end');
         sliderEl.innerHTML = getSlideTemplate(sliderData[id - 1]);
         const slide = sliderEl.querySelector('.slide');
-        slide.classList.add('fade-out');
-        setTimeout(function () {
-            slide.classList.remove('fade-out');
-        }, 50);
-
-    }, 200);
+        slide.classList.add('fade-in');
+        
+    });
     changeActive(document.querySelector(`li[data-id="${id}"`));
 }
 
 function changeActive(node) {
     paginationList.forEach(element => {
-        if (element.classList.contains('active')) {
-            element.classList.remove('active')
-        }
+        element.classList.remove('active')
     });
     node.classList.add('active');
 }
