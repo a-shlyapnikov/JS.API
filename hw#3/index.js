@@ -1,5 +1,5 @@
 const photoContainer = document.querySelector('.photo-container');
-const accessKey = 'ngjwbvD10xTRa1P3-d1p4F2eDhmedQ8Xbzk-SsKStRQ';
+const accessKey = '';
 const localStorageLikedPhotoKey = 'Liked';
 const btnShowLiked = document.querySelector('.btn-liked a');
 const urlRandom = 'https://api.unsplash.com/photos/random';
