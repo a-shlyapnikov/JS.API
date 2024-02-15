@@ -8,7 +8,7 @@ const urlPhotoById = 'https://api.unsplash.com/photos/';
 if (!localStorage.getItem(localStorageLikedPhotoKey)) {
     localStorage.setItem(localStorageLikedPhotoKey, JSON.stringify({}));
 }
-const LIKED_PHOTOS = JSON.parse(localStorage.getItem(localStorageLikedPhotoKey));
+const likedPhotos = JSON.parse(localStorage.getItem(localStorageLikedPhotoKey));
 
 const photo = await fetchPhoto(urlRandom);
 renderPhoto(photo);
@@ -23,18 +23,18 @@ btnLike.addEventListener('click', (e) => {
     const id = photo.id;
     const likeCounterEl = photoContainer.querySelector('.like-counter');
     let likes = +likeCounterEl.textContent;
-    if (LIKED_PHOTOS[id]) {
+    if (likedPhotos[id]) {
         likes--;
         likeCounterEl.textContent = likes;
-        delete LIKED_PHOTOS[id];
-        saveToLocalStorage(localStorageLikedPhotoKey, LIKED_PHOTOS);
+        delete likedPhotos[id];
+        saveToLocalStorage(localStorageLikedPhotoKey, likedPhotos);
         btnLike.classList.remove('active');
     } else {
         likes++;
         likeCounterEl.textContent = likes;
         const { urls: { regular }, alt_description, user: { first_name, last_name, instagram_username } } = photo;
-        LIKED_PHOTOS[id] = { urls: { regular }, alt_description, likes, user: { first_name, last_name, instagram_username }, id };
-        saveToLocalStorage(localStorageLikedPhotoKey, LIKED_PHOTOS);
+        likedPhotos[id] = { urls: { regular }, alt_description, likes, user: { first_name, last_name, instagram_username }, id };
+        saveToLocalStorage(localStorageLikedPhotoKey, likedPhotos);
         btnLike.classList.add('active');
     }
 
@@ -52,16 +52,14 @@ btnShowLiked.addEventListener('click', async ({ target }) => {
         photoContainer.innerHTML = '';
         target.classList.add('active');
         target.textContent = 'Смотреть дальше';
-        for (const id in LIKED_PHOTOS) {
-            // const photo = await fetchPhoto(urlPhotoById + id);
-            const photo = LIKED_PHOTOS[id];
+        for (const id in likedPhotos) {
+            const photo = likedPhotos[id];
             console.log(photo);
             photoContainer.insertAdjacentHTML('beforeend', getPictureTemplate(photo))
         }
     }
 
 });
-console.log(LIKED_PHOTOS['HghkWDMuHx4'] ? 'active' : 'loh');
 
 function saveToLocalStorage(key, obj) {
     localStorage.setItem(key, JSON.stringify(obj));
@@ -93,7 +91,7 @@ function getPictureTemplate(photo) {
             <p class="photo__socials"> ${photo.user.instagram_username ? 'Instagram: ' + photo.user.instagram_username : ''} </p>
             <div class="photo__like-container">
                 <p>Likes: <span class="like-counter">${photo.likes}</span></p>
-                <a href="#" class="like ${LIKED_PHOTOS[photo.id] ? 'active' : ''}">Like</a>
+                <a href="#" class="like ${likedPhotos[photo.id] ? 'active' : ''}">Like</a>
             </div>
         </div>
     `);
